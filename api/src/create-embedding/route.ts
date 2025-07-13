@@ -4,6 +4,7 @@ import { ratelimitMiddleware } from "../lib/middleware/rateLimiterMiddleware";
 import { embeddingController } from "./controllers/EmbeddController";
 import { embeddingService } from "./services/EmbeddService";
 import { embeddingRepo } from "./repository/EmbeddRepo";
+import multer from "multer";
 
 export function VectorEmbeddingRouter(db: MongoClient) {
   let windowMs = 5 * 60 * 1000;
@@ -12,14 +13,16 @@ export function VectorEmbeddingRouter(db: MongoClient) {
   const embedService = new embeddingService(EmbeddRepo);
   const controller = new embeddingController(embedService);
 
+  const upload = multer({ dest: "./upload" });
   VectorEmbeddingRouter.post(
-    "/create-embedding",
+    "/vector/create-embedding",
     ratelimitMiddleware({
       windowMs: windowMs,
       limit: 4,
       standardHeaders: "draft-8",
       legacyHeaders: true,
     }),
+    upload.single("file"),
     controller.create.bind(controller)
   );
 

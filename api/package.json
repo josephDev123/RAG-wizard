@@ -4,7 +4,7 @@
   "main": "server.ts",
   "scripts": {
     "start": "node ./dist/server.js",
-    "dev": "ts-node server.ts",
+    "dev": "nodemon --watch ./ --ext ts --exec ts-node server.ts",
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -13,16 +13,20 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@langchain/community": "^0.3.48",
+    "@langchain/core": "^0.3.62",
     "cors": "^2.8.5",
     "dotenv": "^17.2.0",
     "express": "^5.1.0",
     "express-rate-limit": "^7.5.1",
     "mongodb": "^6.17.0",
+    "pdf-parse": "^1.1.1",
     "zod": "^4.0.5"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
+    "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   }

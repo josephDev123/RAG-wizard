@@ -14,7 +14,7 @@ export async function createApp(config: IConfig) {
       origin: config.ALLOW_ORIGIN,
     })
   );
-  app.use("/vector", VectorEmbeddingRouter(MongoDbclient));
+  app.use("/api", VectorEmbeddingRouter(MongoDbclient));
 
   app.use(GlobalErrorMiddleware);
 
