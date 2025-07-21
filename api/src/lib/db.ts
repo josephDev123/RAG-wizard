@@ -4,16 +4,14 @@ dotenv.config();
 
 const uri = process.env.MONGODB_ATLAS_URI!;
 
-// Create a MongoClient with a MongoClientOptions object to set the Stable API version
-export const MongoDbclient = new MongoClient(uri, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  },
-});
-
-export async function run() {
+export async function InitDb() {
+  const MongoDbclient = new MongoClient(uri, {
+    serverApi: {
+      version: ServerApiVersion.v1,
+      strict: true,
+      deprecationErrors: true,
+    },
+  });
   try {
     // Connect the client to the server (optional starting in v4.7)
     await MongoDbclient.connect();
@@ -23,9 +21,9 @@ export async function run() {
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
-  } finally {
-    // Ensures that the client will close when you finish/error
-    await MongoDbclient.close();
+    return MongoDbclient;
+  } catch (error) {
+    console.error("Failed to connect to MongoDB:", error);
+    throw error;
   }
 }
-// run().catch(console.dir);

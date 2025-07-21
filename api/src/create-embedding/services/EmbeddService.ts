@@ -11,6 +11,7 @@ export class embeddingService {
       // load doc into page
       const loader = new PDFLoader(file);
       const docs = await loader.load();
+      // console.log("loaded doc", docs);
 
       // split the doc into chunks
       const splitter = new RecursiveCharacterTextSplitter({
@@ -18,20 +19,24 @@ export class embeddingService {
         chunkOverlap: 200,
       });
       const split = await splitter.splitDocuments(docs);
+      // console.log("split doc", split);
 
       // create vector embeddings
       const model = new HuggingFaceTransformersEmbeddings({
         model: "Xenova/all-MiniLM-L6-v2",
       });
       const texts = split.map((doc) => doc.pageContent);
-      const vector_embeddings = await model.embedDocuments(texts);
+      const vector = await model.embedDocuments(texts);
+      console.log("vector", vector);
 
       await this.embeddingRepo.create(model, split);
       console.log(split);
+      return;
 
       //
     } catch (error) {
       console.log(error);
+      throw error;
     }
   }
 }

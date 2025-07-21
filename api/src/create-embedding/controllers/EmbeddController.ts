@@ -10,14 +10,16 @@ export class embeddingController {
       const file = req.file;
       // console.log(file);
       if (!file) {
-        return res.status(400).json({ msg: "No file uploaded" });
+        throw new Error("File is required");
       }
       const result = await this.EmbeddingService.handleCreateEmbeddings(
         file.path
       );
       res.status(201).json({ msg: "embeddings created successfully" });
+      return;
     } catch (error) {
       res.json(500).json({ msg: "embeddings failed" });
+      return;
     }
   }
 }
