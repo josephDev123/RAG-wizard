@@ -26,5 +26,17 @@ export function VectorEmbeddingRouter(db: MongoClient) {
     controller.create.bind(controller)
   );
 
+  VectorEmbeddingRouter.post(
+    "/vector/search",
+    ratelimitMiddleware({
+      windowMs: windowMs,
+      limit: 4,
+      standardHeaders: "draft-8",
+      legacyHeaders: true,
+    }),
+
+    controller.search.bind(controller)
+  );
+
   return VectorEmbeddingRouter;
 }

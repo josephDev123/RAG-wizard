@@ -2,6 +2,7 @@ import { embeddingRepo } from "../repository/EmbeddRepo";
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { HuggingFaceTransformersEmbeddings } from "@langchain/community/embeddings/huggingface_transformers";
+import { GlobalErrorHandler } from "../../lib/util/globalErrorHandler";
 
 export class embeddingService {
   constructor(private readonly embeddingRepo: embeddingRepo) {}
@@ -29,14 +30,55 @@ export class embeddingService {
       const vector = await model.embedDocuments(texts);
       console.log("vector", vector);
 
-      await this.embeddingRepo.create(model, split);
+      const result = await this.embeddingRepo.create(model, split);
       console.log(split);
-      return;
+      return result;
 
       //
     } catch (error) {
       console.log(error);
-      throw error;
+      if (error instanceof Error) {
+        new GlobalErrorHandler(error.name, error.message, 500, true);
+      }
+
+      if (error instanceof GlobalErrorHandler) {
+        throw error;
+      }
+      new GlobalErrorHandler(
+        "Unknown",
+        "Failed to create embeddings",
+        500,
+        false
+      );
+    }
+  }
+
+  async handleSearch(query: string) {
+    try {
+      // create model
+      const model = new HuggingFaceTransformersEmbeddings({
+        model: "Xenova/all-MiniLM-L6-v2",
+      });
+
+      const vector = await model.embedQuery(query);
+      // console.log(vector);
+      const searchResult = await this.embeddingRepo.vectorSearch(vector);
+      return searchResult;
+    } catch (error) {
+      console.log(error);
+      if (error instanceof Error) {
+        new GlobalErrorHandler(error.name, error.message, 500, true);
+      }
+
+      if (error instanceof GlobalErrorHandler) {
+        throw error;
+      }
+      new GlobalErrorHandler(
+        "Unknown",
+        "Failed to create embeddings",
+        500,
+        false
+      );
     }
   }
 }

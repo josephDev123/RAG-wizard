@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { embeddingService } from "../services/EmbeddService";
+import { GlobalErrorHandler } from "../../lib/util/globalErrorHandler";
 
 export class embeddingController {
   constructor(private readonly EmbeddingService: embeddingService) {}
@@ -8,18 +9,62 @@ export class embeddingController {
     try {
       // const payload = "";
       const file = req.file;
-      // console.log(file);
+      console.log(file);
       if (!file) {
         throw new Error("File is required");
       }
       const result = await this.EmbeddingService.handleCreateEmbeddings(
         file.path
       );
-      res.status(201).json({ msg: "embeddings created successfully" });
+      res
+        .status(201)
+        .json({ msg: result?.msg || "embeddings created successfully" });
       return;
     } catch (error) {
-      res.json(500).json({ msg: "embeddings failed" });
+      console.log(error);
+      if (error instanceof Error) {
+        next(new GlobalErrorHandler(error.name, error.message, 500, true));
+      }
+
+      if (error instanceof GlobalErrorHandler) {
+        next(error);
+      }
+      next(
+        new GlobalErrorHandler(
+          "Unknown",
+          "Failed to create embeddings",
+          500,
+          false
+        )
+      );
       return;
+    }
+  }
+
+  async search(req: Request, res: Response, next: NextFunction) {
+    try {
+      const body = req.body;
+      const payload = body.query;
+      const result = await this.EmbeddingService.handleSearch(payload);
+      res.status(200).json({ data: result, msg: "vector search successful" });
+      return;
+    } catch (error) {
+      console.log(error);
+      if (error instanceof Error) {
+        next(new GlobalErrorHandler(error.name, error.message, 500, true));
+      }
+
+      if (error instanceof GlobalErrorHandler) {
+        next(error);
+      }
+      next(
+        new GlobalErrorHandler(
+          "Unknown",
+          "Failed to create embeddings",
+          500,
+          false
+        )
+      );
     }
   }
 }

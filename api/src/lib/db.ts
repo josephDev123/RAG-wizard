@@ -6,11 +6,11 @@ const uri = process.env.MONGODB_ATLAS_URI!;
 
 export async function InitDb() {
   const MongoDbclient = new MongoClient(uri, {
-    serverApi: {
-      version: ServerApiVersion.v1,
-      strict: true,
-      deprecationErrors: true,
-    },
+    // serverApi: {
+    //   version: ServerApiVersion.v1,
+    //   strict: true,
+    //   deprecationErrors: true,
+    // },
   });
   try {
     // Connect the client to the server (optional starting in v4.7)
