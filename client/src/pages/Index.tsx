@@ -1,50 +1,57 @@
-
-import React, { useState, useRef } from 'react';
-import { Upload, MessageCircle, FileText, Brain, Sparkles } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { toast } from '@/hooks/use-toast';
-import DocumentUpload from '@/components/DocumentUpload';
-import ChatInterface from '@/components/ChatInterface';
-import { RAGProcessor } from '@/lib/ragProcessor';
+import React, { useState, useRef } from "react";
+import { Upload, MessageCircle, FileText, Brain, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "@/hooks/use-toast";
+import DocumentUpload from "@/components/DocumentUpload";
+import ChatInterface from "@/components/ChatInterface";
+import { RAGProcessor } from "@/lib/ragProcessor";
 
 const Index = () => {
-  const [documents, setDocuments] = useState<Array<{ id: string; name: string; content: string; chunks: string[] }>>([]);
+  const [documents, setDocuments] = useState<{
+    id: string;
+    name: string;
+    content: File;
+    chunks: number;
+    docLength: number;
+  }>();
+
   const [isProcessing, setIsProcessing] = useState(false);
   const [ragProcessor] = useState(() => new RAGProcessor());
-  const [question, setQuestion] = useState('');
-  const [answer, setAnswer] = useState('');
+  const [question, setQuestion] = useState("");
+  const [answer, setAnswer] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
-  const [chatHistory, setChatHistory] = useState<Array<{ question: string; answer: string; timestamp: Date }>>([]);
+  const [chatHistory, setChatHistory] = useState<
+    Array<{ question: string; answer: string; timestamp: Date }>
+  >([]);
 
   const handleDocumentUpload = async (files: FileList) => {
     setIsProcessing(true);
     console.log("Processing uploaded documents:", files.length);
-    
+
     try {
-      const newDocuments = [];
-      
-      for (const file of Array.from(files)) {
-        const content = await file.text();
-        const chunks = await ragProcessor.chunkDocument(content);
-        
+      // for (const file of Array.from(files)) {
+      // const content = await file.text();
+
+      function cb(chunks: number) {
         const doc = {
           id: crypto.randomUUID(),
-          name: file.name,
-          content,
-          chunks
+          name: files[0].name,
+          content: files[0],
+          chunks,
+          docLength: files.length,
         };
-        
-        newDocuments.push(doc);
-        console.log(`Processed document: ${file.name} into ${chunks.length} chunks`);
+
+        setDocuments((prev) => ({ ...prev, ...doc }));
       }
-      
-      setDocuments(prev => [...prev, ...newDocuments]);
+      let result = await ragProcessor.chunkDocument(files[0], 800, 200, cb);
+
+      console.log(result);
       toast({
         title: "Documents Processed",
-        description: `Successfully processed ${newDocuments.length} document(s) for RAG retrieval.`,
+        description: `Successfully processed  document for RAG retrieval.`,
       });
     } catch (error) {
       console.error("Error processing documents:", error);
@@ -60,40 +67,17 @@ const Index = () => {
 
   const handleQuestionSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!question.trim() || documents.length === 0) {
-      toast({
-        title: "Missing Information",
-        description: documents.length === 0 ? "Please upload documents first." : "Please enter a question.",
-        variant: "destructive",
-      });
-      return;
-    }
 
     setIsGenerating(true);
     console.log("Processing question:", question);
 
     try {
       // Retrieve relevant chunks from all documents
-      const allChunks = documents.flatMap(doc => 
-        doc.chunks.map(chunk => ({ chunk, source: doc.name }))
-      );
-      
-      const relevantChunks = await ragProcessor.retrieveRelevantChunks(question, allChunks);
-      console.log("Found relevant chunks:", relevantChunks.length);
-      
-      // Generate answer using retrieved context
-      const generatedAnswer = await ragProcessor.generateAnswer(question, relevantChunks);
-      
-      setAnswer(generatedAnswer);
-      setChatHistory(prev => [...prev, { 
-        question, 
-        answer: generatedAnswer, 
-        timestamp: new Date() 
-      }]);
-      
+
       toast({
         title: "Answer Generated",
-        description: "Your question has been answered using the uploaded documents.",
+        description:
+          "Your question has been answered using the uploaded documents.",
       });
     } catch (error) {
       console.error("Error generating answer:", error);
@@ -124,8 +108,8 @@ const Index = () => {
               <Sparkles className="inline-block w-8 h-8 ml-2 text-yellow-400" />
             </h1>
             <p className="text-xl text-white/80 max-w-2xl mx-auto">
-              Upload your documents and ask questions. Get intelligent answers powered by 
-              Retrieval-Augmented Generation technology.
+              Upload your documents and ask questions. Get intelligent answers
+              powered by Retrieval-Augmented Generation technology.
             </p>
           </div>
 
@@ -134,8 +118,12 @@ const Index = () => {
             <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white">
               <CardContent className="p-6 text-center">
                 <FileText className="w-8 h-8 mx-auto mb-2 text-blue-400" />
-                <div className="text-2xl font-bold">{documents.length}</div>
-                <div className="text-white/70">Documents Uploaded</div>
+                <div className="text-2xl font-bold">
+                  {documents?.docLength ?? 0}
+                </div>
+                <div className="text-white/70">
+                  Documents Uploaded (<b>note:</b> only process 1)
+                </div>
               </CardContent>
             </Card>
             <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white">
@@ -149,7 +137,7 @@ const Index = () => {
               <CardContent className="p-6 text-center">
                 <Brain className="w-8 h-8 mx-auto mb-2 text-purple-400" />
                 <div className="text-2xl font-bold">
-                  {documents.reduce((sum, doc) => sum + doc.chunks.length, 0)}
+                  {documents?.chunks ?? 0}
                 </div>
                 <div className="text-white/70">Text Chunks</div>
               </CardContent>
@@ -194,7 +182,7 @@ const Index = () => {
                   />
                   <Button
                     type="submit"
-                    disabled={isGenerating || documents.length === 0}
+                    disabled={isGenerating || documents?.docLength === 0}
                     className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
                   >
                     {isGenerating ? (
