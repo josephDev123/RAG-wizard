@@ -73,12 +73,42 @@ const Index = () => {
 
     try {
       // Retrieve relevant chunks from all documents
+      const req = await fetch(
+        `${import.meta.env.VITE_BASE_API}/vector/search`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ query: question }),
+        }
+      );
+      if (!req.ok) {
+        toast({
+          title: "Generation Error",
+          description: "Failed to generate an answer. Please try again.",
+          variant: "destructive",
+        });
+
+        return;
+      }
+
+      const response = await req.json();
+      const result = response.data.pageContent;
+
+      console.log(result);
+      setAnswer(result);
+      setChatHistory([
+        ...chatHistory,
+        { answer, question, timestamp: new Date() },
+      ]);
 
       toast({
         title: "Answer Generated",
         description:
           "Your question has been answered using the uploaded documents.",
       });
+      setQuestion("");
     } catch (error) {
       console.error("Error generating answer:", error);
       toast({
@@ -122,7 +152,7 @@ const Index = () => {
                   {documents?.docLength ?? 0}
                 </div>
                 <div className="text-white/70">
-                  Documents Uploaded (<b>note:</b> only process 1)
+                  Documents Uploaded (<b>note:</b> only 1 is process)
                 </div>
               </CardContent>
             </Card>
@@ -145,7 +175,7 @@ const Index = () => {
           </div>
 
           {/* Main Interface */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 ">
             {/* Document Upload */}
             <Card className="bg-white/10 backdrop-blur-sm border-white/20">
               <CardHeader>
