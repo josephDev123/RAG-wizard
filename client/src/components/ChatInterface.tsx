@@ -1,8 +1,7 @@
-
-import React from 'react';
-import { MessageCircle, User, Bot, Clock } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import React from "react";
+import { MessageCircle, User, Bot, Clock } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface ChatMessage {
   question: string;
@@ -19,7 +18,7 @@ interface ChatInterfaceProps {
 const ChatInterface: React.FC<ChatInterfaceProps> = ({
   currentAnswer,
   chatHistory,
-  isGenerating
+  isGenerating,
 }) => {
   return (
     <Card className="bg-white/10 backdrop-blur-sm border-white/20">
@@ -46,7 +45,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                     </div>
                     <div className="flex items-center mt-1 text-xs text-white/50">
                       <Clock className="w-3 h-3 mr-1" />
-                      {chat.timestamp.toLocaleTimeString()}
+                      {new Date(chat.timestamp).toLocaleTimeString()}
                     </div>
                   </div>
                 </div>
@@ -58,7 +57,9 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                   </div>
                   <div className="flex-1">
                     <div className="bg-white/5 rounded-lg p-3">
-                      <p className="text-white text-sm whitespace-pre-wrap">{chat.answer}</p>
+                      <p className="text-white text-sm whitespace-pre-wrap">
+                        {chat.answer}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -66,18 +67,21 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
             ))}
 
             {/* Current Answer (if generating) */}
-            {currentAnswer && !chatHistory.some(chat => chat.answer === currentAnswer) && (
-              <div className="flex items-start space-x-3">
-                <div className="p-2 bg-green-500/20 rounded-full">
-                  <Bot className="w-4 h-4 text-green-400" />
-                </div>
-                <div className="flex-1">
-                  <div className="bg-white/5 rounded-lg p-3">
-                    <p className="text-white text-sm whitespace-pre-wrap">{currentAnswer}</p>
+            {currentAnswer &&
+              !chatHistory.some((chat) => chat.answer === currentAnswer) && (
+                <div className="flex items-start space-x-3">
+                  <div className="p-2 bg-green-500/20 rounded-full">
+                    <Bot className="w-4 h-4 text-green-400" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="bg-white/5 rounded-lg p-3">
+                      <p className="text-white text-sm whitespace-pre-wrap">
+                        {currentAnswer}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
 
             {/* Loading State */}
             {isGenerating && (
@@ -89,8 +93,14 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                   <div className="bg-white/5 rounded-lg p-3">
                     <div className="flex space-x-1">
                       <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce" />
-                      <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
-                      <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+                      <div
+                        className="w-2 h-2 bg-white/50 rounded-full animate-bounce"
+                        style={{ animationDelay: "0.1s" }}
+                      />
+                      <div
+                        className="w-2 h-2 bg-white/50 rounded-full animate-bounce"
+                        style={{ animationDelay: "0.2s" }}
+                      />
                     </div>
                   </div>
                 </div>

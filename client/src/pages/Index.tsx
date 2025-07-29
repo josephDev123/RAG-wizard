@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Upload, MessageCircle, FileText, Brain, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +9,13 @@ import DocumentUpload from "@/components/DocumentUpload";
 import ChatInterface from "@/components/ChatInterface";
 import { RAGProcessor } from "@/lib/ragProcessor";
 
+type InLocalstorage = {
+  document: number;
+  chunk: number;
+  answers: number;
+};
+
+type IChatHistory = { question: string; answer: string; timestamp: Date };
 const Index = () => {
   const [documents, setDocuments] = useState<{
     id: string;
@@ -23,9 +30,27 @@ const Index = () => {
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
-  const [chatHistory, setChatHistory] = useState<
-    Array<{ question: string; answer: string; timestamp: Date }>
-  >([]);
+  const [chatHistory, setChatHistory] = useState<IChatHistory[]>([]);
+  // const [nLocalStorage, setNlocalStorage] = useState<InLocalstorage>({
+  //   document: 0,
+  //   answers: 0,
+  //   chunk: 0,
+  // });
+
+  const itemNLocalStorage: InLocalstorage = JSON.parse(
+    localStorage.getItem("nLocalStorage") ||
+      '{"answers":0,"chunk":0,"document":0}'
+  );
+
+  useEffect(() => {
+    // get save answers
+    const answerLocalStorage: IChatHistory[] = JSON.parse(
+      localStorage.getItem("localStorageAnswer") || "[]"
+    );
+
+    setChatHistory(answerLocalStorage);
+    console.log(answerLocalStorage);
+  }, []);
 
   const handleDocumentUpload = async (files: FileList) => {
     setIsProcessing(true);
@@ -45,6 +70,15 @@ const Index = () => {
         };
 
         setDocuments((prev) => ({ ...prev, ...doc }));
+
+        localStorage.setItem(
+          "nLocalStorage",
+          JSON.stringify({
+            document: files.length,
+            answers: 0,
+            chunk: chunks,
+          })
+        );
       }
       let result = await ragProcessor.chunkDocument(files[0], 800, 200, cb);
 
@@ -100,8 +134,35 @@ const Index = () => {
       setAnswer(result);
       setChatHistory([
         ...chatHistory,
-        { answer, question, timestamp: new Date() },
+        { answer: result, question, timestamp: new Date() },
       ]);
+
+      // answer counter
+      const itemNLocalStorage: InLocalstorage = JSON.parse(
+        localStorage.getItem("nLocalStorage") ||
+          '{"answers":0,"chunk":0,"document":0}'
+      );
+
+      localStorage.setItem(
+        "nLocalStorage",
+        JSON.stringify({
+          ...itemNLocalStorage,
+          answers: itemNLocalStorage.answers + 1,
+        })
+      );
+
+      // Save answer in localStorage
+      const answerLocalStorage: IChatHistory[] = JSON.parse(
+        localStorage.getItem("localStorageAnswer") || "[]"
+      );
+
+      localStorage.setItem(
+        "localStorageAnswer",
+        JSON.stringify([
+          ...answerLocalStorage,
+          { answer: result, question, timestamp: new Date() },
+        ])
+      );
 
       toast({
         title: "Answer Generated",
@@ -149,7 +210,7 @@ const Index = () => {
               <CardContent className="p-6 text-center">
                 <FileText className="w-8 h-8 mx-auto mb-2 text-blue-400" />
                 <div className="text-2xl font-bold">
-                  {documents?.docLength ?? 0}
+                  {documents?.docLength || itemNLocalStorage?.document}
                 </div>
                 <div className="text-white/70">
                   Documents Uploaded (<b>note:</b> only 1 is process)
@@ -159,7 +220,9 @@ const Index = () => {
             <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white">
               <CardContent className="p-6 text-center">
                 <MessageCircle className="w-8 h-8 mx-auto mb-2 text-green-400" />
-                <div className="text-2xl font-bold">{chatHistory.length}</div>
+                <div className="text-2xl font-bold">
+                  {chatHistory.length || itemNLocalStorage.answers}
+                </div>
                 <div className="text-white/70">Questions Answered</div>
               </CardContent>
             </Card>
@@ -167,7 +230,7 @@ const Index = () => {
               <CardContent className="p-6 text-center">
                 <Brain className="w-8 h-8 mx-auto mb-2 text-purple-400" />
                 <div className="text-2xl font-bold">
-                  {documents?.chunks ?? 0}
+                  {documents?.chunks || itemNLocalStorage.chunk}
                 </div>
                 <div className="text-white/70">Text Chunks</div>
               </CardContent>
