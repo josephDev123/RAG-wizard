@@ -103,7 +103,7 @@ const Index = () => {
     e.preventDefault();
 
     setIsGenerating(true);
-    console.log("Processing question:", question);
+    console.log("Processing questions:", question);
 
     try {
       // Retrieve relevant chunks from all documents
