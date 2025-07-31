@@ -14,6 +14,8 @@ export async function createApp(config: IConfig) {
       origin: config.ALLOW_ORIGIN,
     })
   );
+
+  console.log(config.ALLOW_ORIGIN);
   const MongoDbclient = await InitDb();
   app.use("/api", VectorEmbeddingRouter(MongoDbclient));
 
