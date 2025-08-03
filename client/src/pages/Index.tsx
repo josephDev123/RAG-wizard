@@ -128,7 +128,9 @@ const Index = () => {
       }
 
       const response = await req.json();
-      const result = response.data.pageContent;
+      const responseStructure = response.data;
+      console.log(responseStructure);
+      const result = response.data.answer;
 
       console.log(result);
       setAnswer(result);
