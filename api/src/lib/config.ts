@@ -17,6 +17,8 @@ const configSchema = z.object({
   MONGODB_ATLAS_URI: z.string(),
   MONGODB_ATLAS_DB: z.string(),
   MONGODB_ATLAS_COLLECTION: z.string(),
+  OPENAI_API_KEY: z.string(),
+  OPENAI_ENDPOINT: z.string(),
 });
 
 export type IConfig = z.infer<typeof configSchema>;

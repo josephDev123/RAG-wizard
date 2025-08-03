@@ -3,9 +3,17 @@ import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { HuggingFaceTransformersEmbeddings } from "@langchain/community/embeddings/huggingface_transformers";
 import { GlobalErrorHandler } from "../../lib/util/globalErrorHandler";
+import { ChatPromptTemplate } from "@langchain/core/prompts";
+import { Document } from "@langchain/core/documents";
+import { HuggingFaceInference } from "@langchain/community/llms/hf";
+import OpenAI from "openai";
+// import { ChatOpenAI } from "@langchain/openai";
 
 export class embeddingService {
-  constructor(private readonly embeddingRepo: embeddingRepo) {}
+  constructor(
+    private readonly embeddingRepo: embeddingRepo,
+    private readonly OpenAInit: OpenAI
+  ) {}
 
   async handleCreateEmbeddings(file: string) {
     try {
@@ -63,7 +71,76 @@ export class embeddingService {
       const vector = await model.embedQuery(query);
       // console.log(vector);
       const searchResult = await this.embeddingRepo.vectorSearch(vector);
-      return searchResult;
+
+      const documents = searchResult.map(
+        (item) =>
+          new Document({
+            pageContent: item.pageContent,
+            metadata: item.metadata,
+          })
+      );
+
+      const contextString = documents
+        .map((doc) => doc.pageContent)
+        .join("\n\n");
+
+      //   const llm = new HuggingFaceInference({
+      //     apiKey: process.env.HUGGINGFACE_API_KEY,
+      //     model: "HuggingFaceTB/SmolLM2-135M-Instruct",
+      //     temperature: 0.3,
+      //   });
+
+      // 3. Prepare system prompt
+      const systemPrompt = `
+Answer the question based on the context below. 
+If the answer is not in the context, say "I don't know".
+
+Context:
+${contextString}
+
+Answer:
+    `.trim();
+
+      const llmResponse = await this.OpenAInit.chat.completions.create({
+        model: "openai/gpt-4.1",
+        messages: [
+          {
+            role: "system",
+            content: systemPrompt,
+          },
+          { role: "user", content: query },
+        ],
+      });
+
+      // const prompt = ChatPromptTemplate.fromTemplate(`
+      //   Answer the question based on the context below. If the answer is not in the context, say you don't know.
+
+      //   Question: {question}
+
+      //   Context:
+      //   {context}
+
+      //   Answer:
+      // `);
+
+      //   const chainInput = await prompt.formatMessages({
+      //     question: query,
+      //     context: contextString,
+      //   });
+
+      //   const response = await llm.invoke(chainInput);
+      //   return {
+      //     answer: response,
+      //     sources: documents,
+      //   };
+
+      const answer =
+        llmResponse.choices?.[0]?.message?.content ?? "No answer returned.";
+
+      return {
+        answer,
+        sources: documents,
+      };
     } catch (error) {
       console.log(error);
       if (error instanceof Error) {

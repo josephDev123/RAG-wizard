@@ -2,10 +2,15 @@ import express from "express";
 import { IConfig } from "./src/lib/config";
 import { GlobalErrorMiddleware } from "./src/lib/middleware/globalErrorMiddleware";
 import cors from "cors";
-import { InitDb } from "./src/lib/db";
 import { VectorEmbeddingRouter } from "./src/create-embedding/route";
+import { MongoClient } from "mongodb";
+import OpenAI from "openai";
 
-export async function createApp(config: IConfig) {
+export async function createApp(
+  config: IConfig,
+  MongoDbclient: MongoClient,
+  OpenAInit: OpenAI
+) {
   const app = express();
   app.use(express.json());
   app.use(
@@ -15,9 +20,9 @@ export async function createApp(config: IConfig) {
     })
   );
 
-  console.log(config.ALLOW_ORIGIN);
-  const MongoDbclient = await InitDb();
-  app.use("/api", VectorEmbeddingRouter(MongoDbclient));
+  // console.log(config.ALLOW_ORIGIN);
+
+  app.use("/api", VectorEmbeddingRouter(MongoDbclient, OpenAInit));
 
   app.use(GlobalErrorMiddleware);
 

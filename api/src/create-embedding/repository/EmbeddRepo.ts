@@ -71,10 +71,10 @@ export class embeddingRepo {
           },
         ])
         .toArray();
-      console.log("result", result);
+      // console.log("result", result);
       // const formatResult = result.map((result) => result.pageContent);
 
-      return result[0];
+      return result;
     } catch (error) {
       console.error("Error performing vector search:", error);
       if (error instanceof Error) {

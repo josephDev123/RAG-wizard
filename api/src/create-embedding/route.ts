@@ -5,12 +5,13 @@ import { embeddingController } from "./controllers/EmbeddController";
 import { embeddingService } from "./services/EmbeddService";
 import { embeddingRepo } from "./repository/EmbeddRepo";
 import multer from "multer";
+import OpenAI from "openai";
 
-export function VectorEmbeddingRouter(db: MongoClient) {
+export function VectorEmbeddingRouter(db: MongoClient, OpenAInit: OpenAI) {
   let windowMs = 5 * 60 * 1000;
   const VectorEmbeddingRouter = Router();
   const EmbeddRepo = new embeddingRepo(db);
-  const embedService = new embeddingService(EmbeddRepo);
+  const embedService = new embeddingService(EmbeddRepo, OpenAInit);
   const controller = new embeddingController(embedService);
 
   const upload = multer({ dest: "./upload" });
