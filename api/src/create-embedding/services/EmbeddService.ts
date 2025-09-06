@@ -3,9 +3,9 @@ import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { HuggingFaceTransformersEmbeddings } from "@langchain/community/embeddings/huggingface_transformers";
 import { GlobalErrorHandler } from "../../lib/util/globalErrorHandler";
-import { ChatPromptTemplate } from "@langchain/core/prompts";
+// import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { Document } from "@langchain/core/documents";
-import { HuggingFaceInference } from "@langchain/community/llms/hf";
+// import { HuggingFaceInference } from "@langchain/community/llms/hf";
 import OpenAI from "openai";
 // import { ChatOpenAI } from "@langchain/openai";
 
@@ -27,19 +27,16 @@ export class embeddingService {
         chunkSize: 800,
         chunkOverlap: 200,
       });
-      const split = await splitter.splitDocuments(docs);
+      const documents = await splitter.splitDocuments(docs);
       // console.log("split doc", split);
 
       // create vector embeddings
       const model = new HuggingFaceTransformersEmbeddings({
         model: "Xenova/all-MiniLM-L6-v2",
       });
-      const texts = split.map((doc) => doc.pageContent);
-      const vector = await model.embedDocuments(texts);
-      console.log("vector", vector);
 
-      const result = await this.embeddingRepo.create(model, split);
-      console.log(split);
+      const result = await this.embeddingRepo.create(model, documents);
+      console.log(documents);
       return result;
 
       //

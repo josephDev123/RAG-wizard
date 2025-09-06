@@ -2,33 +2,33 @@ import { MongoDBAtlasVectorSearch } from "@langchain/mongodb";
 
 import { Document, MongoClient } from "mongodb";
 import { GlobalErrorHandler } from "../../lib/util/globalErrorHandler";
-
-// Define or import EmbeddingsInterface
-export interface EmbeddingsInterface {
-  embedQuery(query: string): Promise<number[]>;
-  embedDocuments(documents: string[]): Promise<number[][]>;
-}
+import { HuggingFaceTransformersEmbeddings } from "@langchain/community/embeddings/huggingface_transformers";
 
 export class embeddingRepo {
   constructor(private readonly db: MongoClient) {}
 
-  async create(embeddings: EmbeddingsInterface, allSplits: Document[]) {
+  async create(
+    model: HuggingFaceTransformersEmbeddings,
+    documents: Document[]
+  ) {
     try {
       const collection = this.db
         .db(process.env.MONGODB_ATLAS_DB)
         .collection(process.env.MONGODB_ATLAS_COLLECTION!);
 
-      const vectorStore = new MongoDBAtlasVectorSearch(embeddings, {
+      await collection.deleteMany({});
+
+      const vectorStore = new MongoDBAtlasVectorSearch(model, {
         collection: collection,
         indexName: "rag-index",
         textKey: "pageContent",
         embeddingKey: "embedding",
       });
-      const formattedSplits = allSplits.map((doc) => ({
+      const documentsSplit = documents.map((doc) => ({
         pageContent: doc.pageContent ?? "",
         metadata: { ...doc },
       }));
-      await vectorStore.addDocuments(formattedSplits);
+      await vectorStore.addDocuments(documentsSplit);
       return { msg: "vector embedding created" };
     } catch (error) {
       console.error("Error creating embeddings:", error);
