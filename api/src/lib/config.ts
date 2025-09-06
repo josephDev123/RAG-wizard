@@ -19,6 +19,7 @@ const configSchema = z.object({
   MONGODB_ATLAS_COLLECTION: z.string(),
   OPENAI_API_KEY: z.string(),
   OPENAI_ENDPOINT: z.string(),
+  LOG_LEVEL: z.string(),
 });
 
 export type IConfig = z.infer<typeof configSchema>;
