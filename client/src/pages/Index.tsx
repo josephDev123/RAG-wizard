@@ -135,8 +135,8 @@ const Index = () => {
       console.log(result);
       setAnswer(result);
       setChatHistory([
-        ...chatHistory,
         { answer: result, question, timestamp: new Date() },
+        ...chatHistory,
       ]);
 
       // answer counter

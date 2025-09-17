@@ -69,7 +69,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
           Drag and drop files here, or click to select
         </p>
         <p className="text-white/50 text-xs mb-4">
-          Supports: .txt, .md, .pdf files
+          Supports: .pdf files
         </p>
 
         <Button
