@@ -9,12 +9,14 @@ export class embeddingController {
     try {
       // const payload = "";
       const file = req.file;
-      console.log(file);
-      if (!file) {
+      const fileType = req.file?.mimetype.split("/")[1];
+      // console.log(fileType);
+      if (!file || !fileType) {
         throw new Error("File is required");
       }
       const result = await this.EmbeddingService.handleCreateEmbeddings(
-        file.path
+        file.path,
+        fileType
       );
       res
         .status(201)

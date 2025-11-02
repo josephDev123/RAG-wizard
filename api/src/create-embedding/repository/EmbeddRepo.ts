@@ -1,5 +1,4 @@
 import { MongoDBAtlasVectorSearch } from "@langchain/mongodb";
-
 import { Document, MongoClient } from "mongodb";
 import { GlobalErrorHandler } from "../../lib/util/globalErrorHandler";
 import { HuggingFaceTransformersEmbeddings } from "@langchain/community/embeddings/huggingface_transformers";

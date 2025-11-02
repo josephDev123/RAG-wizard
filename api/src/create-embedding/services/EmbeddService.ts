@@ -3,11 +3,8 @@ import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { HuggingFaceTransformersEmbeddings } from "@langchain/community/embeddings/huggingface_transformers";
 import { GlobalErrorHandler } from "../../lib/util/globalErrorHandler";
-// import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { Document } from "@langchain/core/documents";
-// import { HuggingFaceInference } from "@langchain/community/llms/hf";
 import OpenAI from "openai";
-// import { ChatOpenAI } from "@langchain/openai";
 
 export class embeddingService {
   constructor(
@@ -15,31 +12,29 @@ export class embeddingService {
     private readonly OpenAInit: OpenAI
   ) {}
 
-  async handleCreateEmbeddings(file: string) {
+  async handleCreateEmbeddings(filePath: string, fileType: string) {
     try {
       // load doc into page
-      const loader = new PDFLoader(file);
-      const docs = await loader.load();
-      // console.log("loaded doc", docs);
+      const docs = await this.FileLoaderFactory(fileType, filePath);
+
+      console.log("loaded doc", docs);
 
       // split the doc into chunks
       const splitter = new RecursiveCharacterTextSplitter({
         chunkSize: 800,
         chunkOverlap: 200,
       });
-      const documents = await splitter.splitDocuments(docs);
+      const splitDocument = await splitter.splitDocuments(docs);
       // console.log("split doc", split);
 
-      // create vector embeddings
+      // initial the vector embeddings model
       const model = new HuggingFaceTransformersEmbeddings({
         model: "Xenova/all-MiniLM-L6-v2",
       });
 
-      const result = await this.embeddingRepo.create(model, documents);
-      console.log(documents);
+      const result = await this.embeddingRepo.create(model, splitDocument);
+      console.log(splitDocument);
       return result;
-
-      //
     } catch (error) {
       console.log(error);
       if (error instanceof Error) {
@@ -55,6 +50,35 @@ export class embeddingService {
         500,
         false
       );
+    }
+  }
+
+  async FileLoaderFactory(
+    fileType: string,
+    filePath: string
+  ): Promise<Document[]> {
+    try {
+      let docs: Document[] = [];
+
+      if (fileType === "pdf") {
+        const pdfLoader = new PDFLoader(filePath);
+        docs = await pdfLoader.load();
+      } else if (fileType === "csv") {
+        // TODO: implement CSV loader when needed
+        // keep docs as empty array for now or throw if you prefer:
+        // throw new GlobalErrorHandler('UnsupportedFileType', `CSV loader not implemented`, 400, false);
+      } else {
+        // Unsupported file type - return empty array or throw
+        // throw new GlobalErrorHandler('UnsupportedFileType', `File type ${fileType} not supported`, 400, false);
+      }
+
+      return docs;
+    } catch (error) {
+      console.log(error);
+      if (error instanceof Error) {
+        new GlobalErrorHandler(error.name, error.message, 500, true);
+      }
+      throw error;
     }
   }
 
