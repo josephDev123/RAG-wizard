@@ -10,7 +10,7 @@ export class embeddingController {
       // const payload = "";
       const file = req.file;
       const fileType = req.file?.mimetype.split("/")[1];
-      // console.log(fileType);
+      console.log(fileType);
       if (!file || !fileType) {
         throw new Error("File is required");
       }

@@ -13,7 +13,7 @@ export async function createApp(
   OpenAInit: OpenAI,
   logger: Logger
 ) {
-  logger.info({ greeting: "hello world" }, "logging ...");
+  // logger.info({ greeting: "hello world" }, "logging ...");
   const app = express();
   app.use(express.json());
   app.use(

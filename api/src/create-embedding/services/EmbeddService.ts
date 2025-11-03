@@ -1,5 +1,6 @@
 import { embeddingRepo } from "../repository/EmbeddRepo";
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
+import { CSVLoader } from "@langchain/community/document_loaders/fs/csv";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { HuggingFaceTransformersEmbeddings } from "@langchain/community/embeddings/huggingface_transformers";
 import { GlobalErrorHandler } from "../../lib/util/globalErrorHandler";
@@ -17,7 +18,7 @@ export class embeddingService {
       // load doc into page
       const docs = await this.FileLoaderFactory(fileType, filePath);
 
-      console.log("loaded doc", docs);
+      // console.log("loaded doc", docs);
 
       // split the doc into chunks
       const splitter = new RecursiveCharacterTextSplitter({
@@ -33,7 +34,7 @@ export class embeddingService {
       });
 
       const result = await this.embeddingRepo.create(model, splitDocument);
-      console.log(splitDocument);
+      // console.log(splitDocument);
       return result;
     } catch (error) {
       console.log(error);
@@ -64,12 +65,17 @@ export class embeddingService {
         const pdfLoader = new PDFLoader(filePath);
         docs = await pdfLoader.load();
       } else if (fileType === "csv") {
-        // TODO: implement CSV loader when needed
-        // keep docs as empty array for now or throw if you prefer:
+        const csvDocs = new CSVLoader(filePath);
+        docs = await csvDocs.load();
         // throw new GlobalErrorHandler('UnsupportedFileType', `CSV loader not implemented`, 400, false);
       } else {
         // Unsupported file type - return empty array or throw
-        // throw new GlobalErrorHandler('UnsupportedFileType', `File type ${fileType} not supported`, 400, false);
+        throw new GlobalErrorHandler(
+          "UnsupportedFileType",
+          `File type ${fileType} not supported`,
+          400,
+          false
+        );
       }
 
       return docs;

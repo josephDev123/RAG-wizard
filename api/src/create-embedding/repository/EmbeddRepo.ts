@@ -1,5 +1,6 @@
 import { MongoDBAtlasVectorSearch } from "@langchain/mongodb";
-import { Document, MongoClient } from "mongodb";
+import { MongoClient } from "mongodb";
+import { Document } from "langchain/document";
 import { GlobalErrorHandler } from "../../lib/util/globalErrorHandler";
 import { HuggingFaceTransformersEmbeddings } from "@langchain/community/embeddings/huggingface_transformers";
 
@@ -23,11 +24,8 @@ export class embeddingRepo {
         textKey: "pageContent",
         embeddingKey: "embedding",
       });
-      const documentsSplit = documents.map((doc) => ({
-        pageContent: doc.pageContent ?? "",
-        metadata: { ...doc },
-      }));
-      await vectorStore.addDocuments(documentsSplit);
+
+      await vectorStore.addDocuments(documents);
       return { msg: "vector embedding created" };
     } catch (error) {
       console.error("Error creating embeddings:", error);
