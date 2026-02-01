@@ -11,7 +11,7 @@ export async function createApp(
   config: IConfig,
   MongoDbclient: MongoClient,
   OpenAInit: OpenAI,
-  logger: Logger
+  logger: Logger,
 ) {
   // logger.info({ greeting: "hello world" }, "logging ...");
   const app = express();
@@ -20,7 +20,7 @@ export async function createApp(
     cors({
       credentials: true,
       origin: config.ALLOW_ORIGIN,
-    })
+    }),
   );
 
   // console.log(config.ALLOW_ORIGIN);

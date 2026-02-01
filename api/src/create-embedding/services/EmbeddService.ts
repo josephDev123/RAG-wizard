@@ -10,7 +10,7 @@ import OpenAI from "openai";
 export class embeddingService {
   constructor(
     private readonly embeddingRepo: embeddingRepo,
-    private readonly OpenAInit: OpenAI
+    private readonly OpenAInit: OpenAI,
   ) {}
 
   async handleCreateEmbeddings(filePath: string, fileType: string) {
@@ -26,7 +26,7 @@ export class embeddingService {
         chunkOverlap: 200,
       });
       const splitDocument = await splitter.splitDocuments(docs);
-      // console.log("split doc", split);
+      console.log("split doc", splitDocument);
 
       // initial the vector embeddings model
       const model = new HuggingFaceTransformersEmbeddings({
@@ -49,14 +49,14 @@ export class embeddingService {
         "Unknown",
         "Failed to create embeddings",
         500,
-        false
+        false,
       );
     }
   }
 
   async FileLoaderFactory(
     fileType: string,
-    filePath: string
+    filePath: string,
   ): Promise<Document[]> {
     try {
       let docs: Document[] = [];
@@ -74,7 +74,7 @@ export class embeddingService {
           "UnsupportedFileType",
           `File type ${fileType} not supported`,
           400,
-          false
+          false,
         );
       }
 
@@ -104,7 +104,7 @@ export class embeddingService {
           new Document({
             pageContent: item.pageContent,
             metadata: item.metadata,
-          })
+          }),
       );
 
       const contextString = documents
@@ -181,7 +181,7 @@ Answer:
         "Unknown",
         "Failed to create embeddings",
         500,
-        false
+        false,
       );
     }
   }

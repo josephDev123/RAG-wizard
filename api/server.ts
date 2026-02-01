@@ -10,7 +10,7 @@ import { initGptClient } from "./src/lib/OpenAI";
     const MongoDbclient = await InitDb();
     const OpenAInit = initGptClient(
       config.OPENAI_API_KEY,
-      config.OPENAI_ENDPOINT
+      config.OPENAI_ENDPOINT,
     );
     const app = await createApp(config, MongoDbclient, OpenAInit, logger);
 

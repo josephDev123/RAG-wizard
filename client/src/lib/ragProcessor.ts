@@ -13,7 +13,7 @@ export class RAGProcessor {
     // content: string,
     chunkSize: number = 800,
     overlap: number = 200,
-    cb: (chunk: string | number) => void
+    cb: (chunk: string | number) => void,
   ): Promise<any> {
     console.log("Chunking document with length:");
     try {
@@ -27,17 +27,27 @@ export class RAGProcessor {
         chunkOverlap: overlap,
       });
       const splitDocuments = await splitter.splitDocuments(docs);
+
+      if (splitDocuments.length <= 0) {
+        toast({
+          title: "Created  Embedding Fail",
+          description:
+            "vector embedding failed because Document can't be splitted.",
+          variant: "destructive",
+        });
+        return;
+      }
       console.log("split doc", splitDocuments);
       cb(splitDocuments.length);
       const formData = new FormData();
       formData.append("file", file); // ✅ file is a single File object
 
       const req = await fetch(
-        `${import.meta.env.VITE_BASE_API}/vector/create-embedding`,
+        `${import.meta.env.VITE_BASE_API}/api/vector/create-embedding`,
         {
           method: "POST",
           body: formData,
-        }
+        },
       );
 
       if (!req.ok) {
@@ -55,9 +65,13 @@ export class RAGProcessor {
         variant: "default",
       });
       return req.json();
-      // return splitDocuments.length;
     } catch (error) {
       console.log(error);
+      if (error instanceof Error) {
+        throw new Error(error.message);
+      }
+
+      throw new Error("Something went wrong");
     }
   }
 
@@ -65,7 +79,7 @@ export class RAGProcessor {
   async retrieveRelevantChunks(
     query: string,
     chunks: Array<{ chunk: string; source: string }>,
-    topK: number = 3
+    topK: number = 3,
   ): Promise<Array<{ chunk: string; source: string; score: number }>> {
     console.log("Retrieving relevant chunks for query:", query);
 
@@ -86,7 +100,7 @@ export class RAGProcessor {
 
       // Boost score for chunks that contain multiple query words
       const wordsInChunk = queryWords.filter((word) =>
-        chunkLower.includes(word)
+        chunkLower.includes(word),
       ).length;
       score += wordsInChunk * 3;
 
@@ -101,7 +115,7 @@ export class RAGProcessor {
 
     console.log(
       `Found ${relevant.length} relevant chunks with scores:`,
-      relevant.map((r) => r.score)
+      relevant.map((r) => r.score),
     );
     return relevant;
   }
@@ -109,7 +123,7 @@ export class RAGProcessor {
   // Generate answer using retrieved context
   async generateAnswer(
     question: string,
-    relevantChunks: Array<{ chunk: string; source: string }>
+    relevantChunks: Array<{ chunk: string; source: string }>,
   ): Promise<string> {
     console.log("Generating answer for question:", question);
     console.log("Using context from chunks:", relevantChunks.length);
@@ -133,7 +147,7 @@ export class RAGProcessor {
     const relevantSentences = sentences.filter((sentence) => {
       const sentenceLower = sentence.toLowerCase();
       return questionWords.some(
-        (word) => word.length > 2 && sentenceLower.includes(word)
+        (word) => word.length > 2 && sentenceLower.includes(word),
       );
     });
 

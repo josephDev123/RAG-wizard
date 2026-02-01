@@ -16,7 +16,7 @@ export class embeddingController {
       }
       const result = await this.EmbeddingService.handleCreateEmbeddings(
         file.path,
-        fileType
+        fileType,
       );
       res
         .status(201)
@@ -36,8 +36,8 @@ export class embeddingController {
           "Unknown",
           "Failed to create embeddings",
           500,
-          false
-        )
+          false,
+        ),
       );
       return;
     }
@@ -64,8 +64,8 @@ export class embeddingController {
           "Unknown",
           "Failed to create embeddings",
           500,
-          false
-        )
+          false,
+        ),
       );
     }
   }

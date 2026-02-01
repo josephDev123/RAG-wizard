@@ -15,6 +15,14 @@ export class embeddingRepo {
     documents: Document[],
   ) {
     try {
+      if (documents.length <= 0) {
+        throw new GlobalErrorHandler(
+          "EmptyUnsplitDocumentError",
+          "No document/the document can't be splitted",
+          400,
+          true,
+        );
+      }
       const collection = this.db
         .db(process.env.MONGODB_ATLAS_DB)
         .collection(process.env.MONGODB_ATLAS_COLLECTION!);
@@ -43,9 +51,9 @@ export class embeddingRepo {
     } catch (error) {
       console.error("Error creating embeddings:", error);
       if (error instanceof Error) {
-        new GlobalErrorHandler(error.name, error.message, 500, true);
+        throw new GlobalErrorHandler(error.name, error.message, 500, true);
       }
-      new GlobalErrorHandler(
+      throw new GlobalErrorHandler(
         "Unknown",
         "Failed to create embeddings",
         500,

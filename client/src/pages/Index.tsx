@@ -39,13 +39,13 @@ const Index = () => {
 
   const itemNLocalStorage: InLocalstorage = JSON.parse(
     localStorage.getItem("nLocalStorage") ||
-      '{"answers":0,"chunk":0,"document":0}'
+      '{"answers":0,"chunk":0,"document":0}',
   );
 
   useEffect(() => {
     // get save answers
     const answerLocalStorage: IChatHistory[] = JSON.parse(
-      localStorage.getItem("localStorageAnswer") || "[]"
+      localStorage.getItem("localStorageAnswer") || "[]",
     );
 
     setChatHistory(answerLocalStorage);
@@ -77,16 +77,16 @@ const Index = () => {
             document: files.length,
             answers: 0,
             chunk: chunks,
-          })
+          }),
         );
       }
-      let result = await ragProcessor.chunkDocument(files[0], 800, 200, cb);
+      await ragProcessor.chunkDocument(files[0], 800, 200, cb);
 
-      console.log(result);
-      toast({
-        title: "Documents Processed",
-        description: `Successfully processed  document for RAG retrieval.`,
-      });
+      // console.log(result);
+      // toast({
+      //   title: "Documents Processed",
+      //   description: `Successfully processed  document for RAG retrieval.`,
+      // });
     } catch (error) {
       console.error("Error processing documents:", error);
       toast({
@@ -108,14 +108,14 @@ const Index = () => {
     try {
       // Retrieve relevant chunks from all documents
       const req = await fetch(
-        `${import.meta.env.VITE_BASE_API}/vector/search`,
+        `${import.meta.env.VITE_BASE_API}/api/vector/search`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ query: question }),
-        }
+        },
       );
       if (!req.ok) {
         toast({
@@ -142,7 +142,7 @@ const Index = () => {
       // answer counter
       const itemNLocalStorage: InLocalstorage = JSON.parse(
         localStorage.getItem("nLocalStorage") ||
-          '{"answers":0,"chunk":0,"document":0}'
+          '{"answers":0,"chunk":0,"document":0}',
       );
 
       localStorage.setItem(
@@ -150,12 +150,12 @@ const Index = () => {
         JSON.stringify({
           ...itemNLocalStorage,
           answers: itemNLocalStorage.answers + 1,
-        })
+        }),
       );
 
       // Save answer in localStorage
       const answerLocalStorage: IChatHistory[] = JSON.parse(
-        localStorage.getItem("localStorageAnswer") || "[]"
+        localStorage.getItem("localStorageAnswer") || "[]",
       );
 
       localStorage.setItem(
@@ -163,7 +163,7 @@ const Index = () => {
         JSON.stringify([
           ...answerLocalStorage,
           { answer: result, question, timestamp: new Date() },
-        ])
+        ]),
       );
 
       toast({
