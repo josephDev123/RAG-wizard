@@ -15,22 +15,20 @@
   "dependencies": {
     "@huggingface/inference": "^4.6.1",
     "@huggingface/transformers": "^3.6.3",
-    "@langchain/community": "^0.3.48",
-    "@langchain/core": "^0.3.62",
-    "@langchain/mongodb": "^0.1.0",
+    "@langchain/core": "^1.0.0",
+    "@langchain/community": "^1.1.10",
     "axios": "^1.10.0",
     "cors": "^2.8.5",
     "d3-dsv": "^2.0.0",
-    "dotenv": "^17.2.0",
+    "dotenv": "^16.4.5",
     "express": "^5.1.0",
     "express-rate-limit": "^7.5.1",
-    "langchain": "^0.3.30",
     "mongodb": "^6.17.0",
     "multer": "^2.0.1",
-    "openai": "^5.11.0",
+    "openai": "^4.62.1",
     "pdf-parse": "^1.1.1",
     "pino": "^9.9.4",
-    "zod": "^4.0.5"
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",

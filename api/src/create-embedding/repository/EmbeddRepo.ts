@@ -1,6 +1,9 @@
-import { MongoDBAtlasVectorSearch } from "@langchain/mongodb";
+// import { MongoDBAtlasVectorSearch } from "@langchain/mongodb";
+// import { MongoDBAtlasVectorSearch } from "@langchain/community/vectorstores/mongodb_atlas";
+
 import { MongoClient } from "mongodb";
-import { Document } from "langchain/document";
+// import { Document } from "langchain/document";
+import { Document } from "@langchain/core/documents";
 import { GlobalErrorHandler } from "../../lib/util/globalErrorHandler";
 import { HuggingFaceTransformersEmbeddings } from "@langchain/community/embeddings/huggingface_transformers";
 
@@ -9,7 +12,7 @@ export class embeddingRepo {
 
   async create(
     model: HuggingFaceTransformersEmbeddings,
-    documents: Document[]
+    documents: Document[],
   ) {
     try {
       const collection = this.db
@@ -18,14 +21,24 @@ export class embeddingRepo {
 
       await collection.deleteMany({});
 
-      const vectorStore = new MongoDBAtlasVectorSearch(model, {
-        collection: collection,
-        indexName: "rag-index",
-        textKey: "pageContent",
-        embeddingKey: "embedding",
-      });
+      // const vectorStore = new MongoDBAtlasVectorSearch(model, {
+      //   collection: collection,
+      //   indexName: "rag-index",
+      //   textKey: "pageContent",
+      //   embeddingKey: "embedding",
+      // });
 
-      await vectorStore.addDocuments(documents);
+      // await vectorStore.addDocuments(documents);
+
+      const docsWithEmbeddings = await Promise.all(
+        documents.map(async (doc) => ({
+          ...doc,
+          embedding: await model.embedQuery(doc.pageContent),
+        })),
+      );
+
+      await collection.insertMany(docsWithEmbeddings);
+
       return { msg: "vector embedding created" };
     } catch (error) {
       console.error("Error creating embeddings:", error);
@@ -36,7 +49,7 @@ export class embeddingRepo {
         "Unknown",
         "Failed to create embeddings",
         500,
-        false
+        false,
       );
     }
   }
@@ -81,7 +94,7 @@ export class embeddingRepo {
         "Unknown",
         "Vector search failed",
         500,
-        false
+        false,
       );
     }
   }
